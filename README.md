@@ -21,8 +21,8 @@ Then add **hubot-amesh** to your `external-scripts.json`:
 ## Sample Interaction
 
 ```
-user1>> hubot hello
-hubot>> hello!
+user1>> hubot amesh
+hubot>> http://i.imgur.com/xxxxxxx.png
 ```
 
 ## NPM Module
