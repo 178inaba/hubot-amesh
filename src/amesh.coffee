@@ -2,21 +2,96 @@
 #   A hubot script that does the things
 #
 # Configuration:
-#   LIST_OF_ENV_VARS_TO_SET
+#   HUBOT_AMESH_IMGUR_CLIENT_ID - Your imgur client id.
 #
 # Commands:
-#   hubot hello - <what the respond trigger does>
-#   orly - <what the hear trigger does>
+#   hubot amesh - Send amesh image Link.
 #
 # Notes:
-#   <optional notes required for the script>
+#   The script requires GraphicsMagick.
 #
 # Author:
 #   178inaba <178inaba@users.noreply.github.com>
 
-module.exports = (robot) ->
-  robot.respond /hello/, (res) ->
-    res.reply "hello!"
+fs = require 'fs'
+os = require 'os'
+path = require 'path'
 
-  robot.hear /orly/, (res) ->
-    res.send "yarly"
+async = require 'async'
+gm = require 'gm'
+moment = require 'moment-timezone'
+require 'moment-round'
+request = require 'request'
+sprintf = require('sprintf-js').sprintf
+
+baseUrl = 'http://tokyo-ame.jwa.or.jp/'
+mapPath = 'map/map000.jpg'
+mskPath = 'map/msk000.png'
+meshFmt = 'mesh/000/%s.gif'
+saveFilenameFmt = '%s.png'
+imgurOpts = {
+  url: 'https://api.imgur.com/3/image.json'
+  headers: {}
+  formData: {}
+  json: true
+}
+
+module.exports = (robot) ->
+  robot.respond /amesh/, (res) ->
+    main (link) ->
+      res.send link
+
+main = (callback) ->
+  clientID = process.env.HUBOT_AMESH_IMGUR_CLIENT_ID
+  if !clientID
+    console.error 'Please set env HUBOT_AMESH_IMGUR_CLIENT_ID.'
+    return
+
+  imgurOpts.headers.Authorization = 'Client-ID ' + clientID
+
+  fileName = getFilename()
+  fs.mkdir getSaveDir(), (err) ->
+    if err && err.code != 'EEXIST'
+      console.error err.message
+      return
+
+    async.mapValues
+      map: baseUrl + mapPath
+      mesh: baseUrl + sprintf meshFmt, fileName
+      msk: baseUrl + mskPath
+      (url, key, callback) ->
+        dlImg url, callback
+      (err, results) ->
+        composite results.map, results.mesh, results.msk, fileName, callback
+
+composite = (map, mesh, msk, fileName, callback) ->
+  saveFile = getSaveDir() + sprintf saveFilenameFmt, fileName
+  gm(map)
+    .composite(mesh)
+    .write saveFile, (err) ->
+      gm(saveFile)
+        .composite(msk)
+        .write saveFile, (err) ->
+          upload saveFile, callback
+
+upload = (uploadFile, callback) ->
+  imgurOpts.formData.image = fs.createReadStream(uploadFile)
+  request.post imgurOpts, (err, resp, body) ->
+    console.log body
+    console.log err
+    callback body.data.link
+
+dlImg = (url, callback) ->
+  filePath = getSaveDir() + path.basename url
+  request.get {url: url, encoding: null}, (err, resp, body) ->
+    fs.writeFile filePath, body, 'binary' if !err && resp.statusCode == 200
+    callback null, filePath
+
+getFilename = ->
+  moment()
+    .tz('Asia/Tokyo')
+    .floor(5, 'minutes')
+    .format('YYYYMMDDHHmm')
+
+getSaveDir = ->
+  os.tmpdir() + path.sep + 'hubot-amesh' + path.sep
