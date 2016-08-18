@@ -19,8 +19,9 @@ path = require 'path'
 
 async = require 'async'
 gm = require 'gm'
-moment = require 'moment-timezone'
+moment = require 'moment'
 require 'moment-round'
+momentTz = require 'moment-timezone'
 request = require 'request'
 sprintf = require('sprintf-js').sprintf
 
@@ -88,8 +89,7 @@ dlImg = (url, callback) ->
     callback null, filePath
 
 getFilename = ->
-  moment()
-    .tz('Asia/Tokyo')
+  moment(momentTz().tz('Asia/Tokyo'))
     .floor(5, 'minutes')
     .format('YYYYMMDDHHmm')
 
