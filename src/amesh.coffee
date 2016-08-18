@@ -18,7 +18,7 @@ os = require 'os'
 path = require 'path'
 
 async = require 'async'
-gm = require 'gm'
+gm = require('gm').subClass imageMagick: true
 moment = require 'moment'
 require 'moment-round'
 momentTz = require 'moment-timezone'
