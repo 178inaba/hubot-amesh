@@ -8,7 +8,7 @@
 #   hubot amesh - Send amesh image Link.
 #
 # Notes:
-#   The script requires GraphicsMagick.
+#   The script requires ImageMagick.
 #
 # Author:
 #   178inaba <178inaba@users.noreply.github.com>
