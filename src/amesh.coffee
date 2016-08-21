@@ -39,10 +39,9 @@ imgurOpts = {
 
 module.exports = (robot) ->
   robot.respond /amesh/, (res) ->
-    main (link) ->
-      res.send link
+    main res
 
-main = (callback) ->
+main = (res) ->
   clientID = process.env.HUBOT_AMESH_IMGUR_CLIENT_ID
   if !clientID
     console.error 'Please set env HUBOT_AMESH_IMGUR_CLIENT_ID.'
@@ -63,9 +62,9 @@ main = (callback) ->
       (url, key, callback) ->
         dlImg url, callback
       (err, results) ->
-        composite results.map, results.mesh, results.msk, fileName, callback
+        composite results.map, results.mesh, results.msk, fileName, res
 
-composite = (map, mesh, msk, fileName, callback) ->
+composite = (map, mesh, msk, fileName, res) ->
   saveFile = getSaveDir() + sprintf saveFilenameFmt, fileName
   gm(map)
     .composite(mesh)
@@ -73,14 +72,14 @@ composite = (map, mesh, msk, fileName, callback) ->
       gm(saveFile)
         .composite(msk)
         .write saveFile, (err) ->
-          upload saveFile, callback
+          upload saveFile, res
 
-upload = (uploadFile, callback) ->
+upload = (uploadFile, res) ->
   imgurOpts.formData.image = fs.createReadStream(uploadFile)
   request.post imgurOpts, (err, resp, body) ->
     console.log body
     console.log err
-    callback body.data.link
+    res.send body.data.link
 
 dlImg = (url, callback) ->
   filePath = getSaveDir() + path.basename url
