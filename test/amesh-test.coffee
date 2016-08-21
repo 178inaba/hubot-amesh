@@ -12,11 +12,11 @@ describe 'amesh', ->
   afterEach ->
     @room.destroy()
 
-  it 'responds to hello', ->
-    @room.user.say('alice', '@hubot hello').then =>
+  it 'not set env', ->
+    @room.user.say('inaba', '@hubot amesh').then =>
       expect(@room.messages).to.eql [
-        ['alice', '@hubot hello']
-        ['hubot', '@alice hello!']
+        ['inaba', '@hubot amesh']
+        ['hubot', 'Please set env HUBOT_AMESH_IMGUR_CLIENT_ID']
       ]
 
   it 'hears orly', ->
