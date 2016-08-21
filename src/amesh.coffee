@@ -36,6 +36,12 @@ imgurOpts = {
   formData: {}
   json: true
 }
+msg = {
+  uploadSuccessFmt: 'Image upload successfully. id: %s, deletehash: %s.'
+  err: {
+    imgurClientIDNotExists: 'Please set env HUBOT_AMESH_IMGUR_CLIENT_ID'
+  }
+}
 
 module.exports = (robot) ->
   robot.respond /amesh/, (res) ->
@@ -44,7 +50,8 @@ module.exports = (robot) ->
 main = (res) ->
   clientID = process.env.HUBOT_AMESH_IMGUR_CLIENT_ID
   if !clientID
-    console.error 'Please set env HUBOT_AMESH_IMGUR_CLIENT_ID.'
+    res.robot.logger.error msg.err.imgurClientIDNotExists
+    res.send msg.err.imgurClientIDNotExists
     return
 
   imgurOpts.headers.Authorization = 'Client-ID ' + clientID
@@ -52,7 +59,7 @@ main = (res) ->
   fileName = getFilename()
   fs.mkdir getSaveDir(), (err) ->
     if err && err.code != 'EEXIST'
-      console.error err.message
+      res.robot.logger.error err.message
       return
 
     async.mapValues
@@ -77,9 +84,11 @@ composite = (map, mesh, msk, fileName, res) ->
 upload = (uploadFile, res) ->
   imgurOpts.formData.image = fs.createReadStream(uploadFile)
   request.post imgurOpts, (err, resp, body) ->
-    console.log body
-    console.log err
-    res.send body.data.link
+    if !err
+      res.robot.logger.info sprintf msg.uploadSuccessFmt, body.data.id, body.data.deletehash
+      res.send body.data.link
+    else
+      res.robot.logger.error err.message
 
 dlImg = (url, callback) ->
   filePath = getSaveDir() + path.basename url
