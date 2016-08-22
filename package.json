@@ -1,7 +1,7 @@
 {
   "name": "hubot-amesh",
   "description": "A hubot script that does the things",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "author": "178inaba <178inaba@users.noreply.github.com>",
   "license": "MIT",
   "keywords": "hubot, hubot-scripts, amesh, tokyo-ame, tokyo-amesh, tokyo, rain",
