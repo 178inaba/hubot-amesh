@@ -28,3 +28,7 @@ hubot>> http://i.imgur.com/xxxxxxx.png
 ## NPM Module
 
 https://www.npmjs.com/package/hubot-amesh
+
+## License
+
+[MIT](LICENSE)
